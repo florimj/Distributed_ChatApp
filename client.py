@@ -24,7 +24,9 @@ class ChatClient:
         while True:
             response, _ = self.client_socket.recvfrom(1024)
             data = json.loads(response.decode())
-            print(f"Message from {data['id']}: {data['text']}")
+            if data["type"] == "message":
+                print(f"Message from another client: {data['text']}")
+
 
 if __name__ == "__main__":
     client = ChatClient(('localhost', 5000))

@@ -2,7 +2,7 @@ import socket
 import threading
 import json
 import uuid
-from leader_election import initiate_leader_election  # Basiert auf den Algorithmen aus der Vorlesung
+from leader_election import initiate_leader_election  # Basiert auf Algorithmen aus Vorlesung
 from heartbeat import monitor_heartbeat
 
 class ChatServer:
@@ -28,16 +28,20 @@ class ChatServer:
             print(f"Received message from {address}: {data}")
             
             if data["type"] == "join":
+                # Neuer Client hat sich verbunden
                 self.clients[address] = data["id"]
                 print(f"Client {data['id']} connected from {address}")
                 self.server_socket.sendto(json.dumps({"type": "ack"}).encode(), address)
             elif data["type"] == "message":
-                # Nachricht weiterverarbeiten
-                print(f"Message from client {data['id']}: {data['text']}")
+                # Nachricht weiterleiten
+                print(f"Received message from client {data['id']}: {data['text']}")
+                self.broadcast_message(data, sender=address)
 
-    def broadcast_message(self, message):
+    def broadcast_message(self, message, sender):
+        # Nachricht an alle anderen Clients senden
         for client in self.clients:
-            self.server_socket.sendto(json.dumps(message).encode(), client)
+            if client != sender:  # Nachricht nicht an den Absender zurücksenden
+                self.server_socket.sendto(json.dumps(message).encode(), client)
 
     def handle_leader_timeout(self):
         print("Leader not responding, initiating leader election.")
