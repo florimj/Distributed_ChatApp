@@ -2,17 +2,17 @@ import socket
 import threading
 import json
 import uuid
-from leader_election import initiate_leader_election  # Basiert auf Algorithmen aus Vorlesung
+from leader_election import initiate_leader_election
 from heartbeat import monitor_heartbeat
 
 class ChatServer:
     def __init__(self, port=5000):
         self.port = port
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.server_socket.bind(('', self.port))
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create UDP Socket
+        self.server_socket.bind(('', self.port)) # Bind socket to port
         self.clients = {}
         self.is_leader = False
-        self.id = uuid.uuid4()  # ID generieren für eindeutige Identifizierung wie in der Vorlesung
+        self.id = uuid.uuid4()  # ID generieren für eindeutige Identifizierung
 
     def start_server(self):
         threading.Thread(target=self.listen_for_clients).start()

@@ -5,9 +5,9 @@ import uuid
 
 class ChatClient:
     def __init__(self, server_address):
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.server_address = server_address
-        self.id = str(uuid.uuid4())
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create UDP Socket
+        self.server_address = server_address # Bind socket to port
+        self.id = str(uuid.uuid4()) # ID generieren für eindeutige Identifizierung
 
     def connect_to_server(self):
         join_message = json.dumps({"type": "join", "id": self.id})
