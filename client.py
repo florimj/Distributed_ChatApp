@@ -1,39 +1,36 @@
 import socket
 import json
 import threading
+import time
 import uuid
 
 class ChatClient:
-    def __init__(self, server_address):
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create UDP Socket
-        self.server_address = server_address # Bind socket to port
-        self.id = str(uuid.uuid4()) # ID generieren für eindeutige Identifizierung
+    def __init__(self, discovery_port=5010):
+        # Discovery Port (UDP)
+        self.discovery_port = discovery_port
 
-    def connect_to_server(self):
-        join_message = json.dumps({"type": "join", "id": self.id})
-        self.client_socket.sendto(join_message.encode(), self.server_address)
-        response, _ = self.client_socket.recvfrom(1024)
-        if json.loads(response.decode())["type"] == "ack":
-            print("Connected to the chat server")
-
-    def send_message(self, message):
-        msg = json.dumps({"type": "message", "id": self.id, "text": message})
-        self.client_socket.sendto(msg.encode(), self.server_address)
-
-    def listen_for_messages(self):
-        while True:
-            response, _ = self.client_socket.recvfrom(1024)
-            data = json.loads(response.decode())
-            if data["type"] == "message":
-                print(f"Message from another client: {data['text']}")
+        # Create UDP Socket for Discovery and Messaging with SO_REUSEADDR enabled
+        self.discovery_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.discovery_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.discovery_socket.bind(('', self.discovery_port))
+        
+        # Create Client Socket on available port
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.client_socket.bind(('', 0))
 
 
-if __name__ == "__main__":
-    client = ChatClient(('localhost', 5000))
-    client.connect_to_server()
-    threading.Thread(target=client.listen_for_messages).start()
-    while True:
-        client.send_message(input("Enter message: "))
+        # Leader Server Data
+        self.server_id = None  # Current leader ID
+        self.server_address = None  # Current leader address (IP, port)
+
+        # Client ID and Port
+        self.id = str(uuid.uuid4())  # Unique ID for the client
+        self.port = self.client_socket.getsockname()[1]
+
+
+
+
 
 
 # Aus Vorlseung:

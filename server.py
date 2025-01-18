@@ -2,52 +2,38 @@ import socket
 import threading
 import json
 import uuid
+import time
 
 class ChatServer:
-    def __init__(self, port=5000):
-        self.port = port
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create UDP Socket
-        self.server_socket.bind(('', self.port)) # Bind socket to port
-        self.clients = {}
+    def __init__(self):
+        # Define Server Port and Discovery Port
+        self.port = 5000
+        self.discovery_port = 5010
+
+        # Create Unique ID and Leader State
+        self.id = str(uuid.uuid4())
         self.is_leader = False
-        self.id = uuid.uuid4()  # ID generieren für eindeutige Identifizierung
+        self.last_heartbeat = time.time()
+        self.voted = False  
 
-    def start_server(self):
-        threading.Thread(target=self.listen_for_clients).start()
-        threading.Thread(target=monitor_heartbeat, args=(self,)).start()
-        print(f"Server running on port {self.port} and waiting for connections...")
+        # Server Socket Initialization
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Create UDP Socket
+        self.server_socket.bind(('', self.port))  # Bind socket to port
+        self.ip = socket.gethostbyname(socket.gethostname())
 
-    def listen_for_clients(self):
-        while True:
-            message, address = self.server_socket.recvfrom(1024)
-            data = json.loads(message.decode())
-            
-            # Nachricht anzeigen, die vom Client empfangen wurde
-            print(f"Received message from {address}: {data}")
-            
-            if data["type"] == "join":
-                # Neuer Client hat sich verbunden
-                self.clients[address] = data["id"]
-                print(f"Client {data['id']} connected from {address}")
-                self.server_socket.sendto(json.dumps({"type": "ack"}).encode(), address)
-            elif data["type"] == "message":
-                # Nachricht weiterleiten
-                print(f"Received message from client {data['id']}: {data['text']}")
-                self.broadcast_message(data, sender=address)
+        # Discovery Socket Initialization
+        self.discovery_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Create UDP Socket
+        self.discovery_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Enable address reuse
+        self.discovery_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)  # Enable broadcast
+        self.discovery_socket.bind(('', self.discovery_port))  # Bind to discovery port
 
-    def broadcast_message(self, message, sender):
-        # Nachricht an alle anderen Clients senden
-        for client in self.clients:
-            if client != sender:  # Nachricht nicht an den Absender zurücksenden
-                self.server_socket.sendto(json.dumps(message).encode(), client)
+        # Client and Server List
+        self.known_clients = {}  # Store connected clients
+        self.known_servers = {}  # Store discovered servers
 
-    def handle_leader_timeout(self):
-        print("Leader not responding, initiating leader election.")
-        initiate_leader_election(self)
 
-if __name__ == "__main__":
-    server = ChatServer()
-    server.start_server()
+
+
 
 
 # Aus Vorlesung:
