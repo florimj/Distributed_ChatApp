@@ -7,7 +7,7 @@ import uuid
 class ChatClient:
     def __init__(self, discovery_port=5010):
         # Discovery Port (UDP)
-        self.discovery_port = discovery_port
+        self.discovery_port = discovery_port # Same as Server discovery_prot
 
         # Create UDP Socket for Discovery and Messaging with SO_REUSEADDR enabled
         self.discovery_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

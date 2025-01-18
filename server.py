@@ -7,9 +7,9 @@ import time
 class ChatServer:
     def __init__(self):
         # Define Server Port and Discovery Port
-        self.port = 5000
-        self.discovery_port = 5010
-
+        self.port = 5000 # Adjust manually
+        self.discovery_port = 5010 # Same as Client discovery_prot
+    
         # Create Unique ID and Leader State
         self.id = str(uuid.uuid4())
         self.is_leader = False
