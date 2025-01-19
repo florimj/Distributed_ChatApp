@@ -31,6 +31,23 @@ class ChatServer:
         self.known_clients = {}  # Store connected clients
         self.known_servers = {}  # Store discovered servers
 
+    def start_server(self):
+        print("------------------------------------------")
+        print(f"Server IP: {self.ip} Server ID: {self.id}")
+        print("------------------------------------------")
+        print(f"Server running on port {self.port} and waiting for connections ...")
+        print(f"Listening for discovery messages on port {self.discovery_port} ...")
+
+        threading.Thread(target=self.listen_on_server_port).start()
+        threading.Thread(target=self.listen_on_discovery_port).start()
+        threading.Thread(target=self.monitor_heartbeat).start()
+        threading.Thread(target=self.broadcast_discovery).start()
+
+        # Delay election to allow discovery
+        time.sleep(10)
+        print("Initiating leader election at startup...")
+        self.initiate_leader_election()
+
 
 
 
