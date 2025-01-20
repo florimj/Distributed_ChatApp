@@ -28,6 +28,30 @@ class ChatClient:
         self.id = str(uuid.uuid4())  # Unique ID for the client
         self.port = self.client_socket.getsockname()[1]
 
+    def discover_leader(self):
+        """Listen on the discovery port for leader announcements."""
+        print(f"Listening for leader-heartbeat messages on port {self.discovery_port}...")
+        while True:
+            response, address = self.discovery_socket.recvfrom(1024)
+            data = json.loads(response.decode())
+            if data["type"] == "heartbeat":
+                server_id = data['id']
+                if self.server_id != server_id:
+                    print(f"New Leader discovered: {data['id']} at {address[0]}:{data['port']}")
+                    self.server_id = server_id
+                    self.server_address = (address[0], data["port"])
+                    self.connect_server()
+                    print("Successfully connected to leader server! \n")
+        
+
+    def connect_server(self):
+        join_message={
+            "type": "join",
+            "id": self.id,
+            "port": self.port
+        }
+        self.client_socket.sendto(json.dumps(join_message).encode(),self.server_address)
+
 
 
 
