@@ -48,7 +48,30 @@ class ChatServer:
         print("Initiating leader election at startup...")
         self.initiate_leader_election()
 
+    def broadcast_discovery(self):
+        while True:
+            discover_message = {
+                "type": "discover",
+                "id": self.id,
+                "port": self.port,
+                "isLeader": self.is_leader
+            }
+            self.discovery_socket.sendto(json.dumps(discover_message).encode(),
+                                         ('<broadcast>', self.discovery_port))
+            print(f"Broadcasting discovery message from {self.id}")
+            time.sleep(10)  # Send discovery messages every 10 seconds
 
+    def broadcast_heartbeat(self):
+        """Leader periodically sends heartbeat messages to all servers."""
+        while self.is_leader:
+            heartbeat_message = {
+                "type": "heartbeat",
+                "id": self.id,
+                "port": self.port
+            }
+            self.discovery_socket.sendto(json.dumps(heartbeat_message).encode(), ('<broadcast>', self.discovery_port))
+            print("Heartbeat sent by the leader.")
+            time.sleep(10)  # Heartbeat interval
 
 
 
