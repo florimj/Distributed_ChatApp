@@ -41,9 +41,9 @@ class ChatServer:
          while True:
              message, address = self.discovery_socket.recvfrom(1024)
            print(f"Discovered new server: {server_ip}:{server_port}")
+
      def listen_on_server_port(self):
             while True:
-                try:
                     message, address = self.server_socket.recvfrom(1024)
                   print(f"Client {data['id']} connected from {address}")
                   
