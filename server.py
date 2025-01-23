@@ -46,6 +46,35 @@ class ChatServer:
             while True:
                     message, address = self.server_socket.recvfrom(1024)
                   print(f"Client {data['id']} connected from {address}")
+
+    def broadcast_discovery(self):
+        while True:
+            discover_message = {
+                "type": "discover",
+                "id": self.id,
+                "port": self.port,
+                "isLeader": self.is_leader
+            }
+            self.discovery_socket.sendto(json.dumps(discover_message).encode(),
+                                         ('<broadcast>', self.discovery_port))
+            print(f"Broadcasting discovery message from {self.id}")
+            time.sleep(10)  # Send discovery messages every 10 seconds
+
+    def listen_on_discovery_port(self):
+        """Listen for discovery messages on the discovery port."""
+        while True:
+            message, address = self.discovery_socket.recvfrom(1024)
+            data = json.loads(message.decode())
+            server_id = data['id']
+            server_ip = address[0]
+            
+            if data["type"] == "discover":
+                print(f"Discovered new server: {server_ip}:{server_port}")
+                    self.known_servers[server_id] = {
+                        "id": server_id,
+                        "ip": server_ip,
+                        "port": server_port,
+                        "isLeader": data['isLeader']
                   
           
     
