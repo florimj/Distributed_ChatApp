@@ -42,3 +42,11 @@ class ChatClient:
                     self.server_address = (address[0], data["port"])
                     self.connect_server()
                     print("Successfully connected to leader server! \n")
+
+    def connect_server(self):
+        join_message={
+            "type": "join",
+            "id": self.id,
+            "port": self.port
+        }
+        self.client_socket.sendto(json.dumps(join_message).encode(),self.server_address)
