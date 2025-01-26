@@ -50,3 +50,19 @@ class ChatClient:
             "port": self.port
         }
         self.client_socket.sendto(json.dumps(join_message).encode(),self.server_address)
+
+    def send_message(self, message):
+        """Send a message to the leader server."""
+        if self.server_address:
+            try:
+                msg = json.dumps({"type": "message", "id": self.id, "text": message})
+                self.discovery_socket.sendto(msg.encode(), self.server_address)
+
+    def listen_for_messages(self):
+        """Listen for messages from the leader server."""
+        while True:
+            try:
+                response, address = self.client_socket.recvfrom(1024)
+                data = json.loads(response.decode())
+                if data["type"] == "message":
+                    print(f"Message from server: {data['text']}")
