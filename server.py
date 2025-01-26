@@ -14,6 +14,7 @@ class ChatServer:
         self.id = str(uuid.uuid4())
         self.is_leader = False
         self.last_heartbeat = time.time()
+        self.voted = False 
 
         # Server Socket Initialization
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Create UDP Socket
@@ -79,16 +80,58 @@ class ChatServer:
           while True:
              message, address = self.discovery_socket.recvfrom(1024)
              data = json.loads(message.decode())
+             server_id = data['id']
+             server_ip = address[0]
+            
              if data["type"] == "discover":
-                 print(f"Discovered new server: {data['id']} at {address}")
-                 self.known_servers[data["id"]] = {"ip": address[0], "port": data["port"]}
-              
-             print(f"Discovery message received:{message}")
+                if server_id not in self.known_servers:
+                    server_ip = server_ip
+                    server_port = data ['port']
+                    self.known_servers[server_id] = {
+                        "id": server_id,
+                        "ip": server_ip,
+                        "port": server_port,
+                        "isLeader": data['isLeader']
+                    }
+                    print(f"Discovered new server: {server_ip}:{server_port}")
+              elif data["type"] == "leader":
+                leader_id = server_id
+                server_port = data ['port']
+                print(f"Server {leader_id} has been elected as leader.")
+
+                #update status
+                self.is_leader = (leader_id == self.id)
+                self.voted = False
 
       def listen_on_server_port(self):
           while True:
-                 message, address = self.server_socket.recvfrom(1024)
-                 print(f"Received message from {address}: {message}")
+              try:
+                  message, address = self.server_socket.recvfrom(1024)
+                  #print(message)
+                  data = json.loads(message.decode())
+
+                  # Display message received from the client
+                  #print(f"Received message from {address}: {data}")
+    
+                  if data["type"] == "join":
+                    # New client connected
+                    client_id = data["id"]
+                    client_ip = address[0]
+                    client_port= data["port"]
+
+                    if client_id not in self.known_clients:
+                        self.known_clients[client_id] = {
+                            "id": client_id,
+                            "ip": client_ip,
+                            "port": client_port,
+                        }
+
+                    print(f"Client {data['id']} connected from {address}")
+
+                    elif data["type"] == "message":
+                    # Forward message
+                    print(f"Received message from client {data['id']}: {data['text']}")
+                    self.broadcast_message(data, data['id'])
 
       def listen_on_discovery_port(self):
         """Listen for discovery messages on the discovery port."""
