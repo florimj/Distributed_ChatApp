@@ -114,6 +114,13 @@ class ChatServer:
           next_server = self.get_next_server()
           self.server_socket.sendto(json.dumps({"type": "election", "token": token_id}).encode(), next_server)
 
+    def broadcast_message(self, message, sender):
+        # Send message to all other clients
+        for client in self.known_clients:
+            if client != sender:  # Do not send the message back to the sender
+                adress = (self.known_clients[client]["ip"],
+                          self.known_clients[client]["port"])
+                
       def initiate_leader_election(self):
         print(f"Server {self.id} initiating leader election.")
         # Start the election with this server's ID
