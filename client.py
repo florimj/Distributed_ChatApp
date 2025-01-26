@@ -66,3 +66,18 @@ class ChatClient:
                 data = json.loads(response.decode())
                 if data["type"] == "message":
                     print(f"Message from server: {data['text']}")
+                    
+if __name__ == "__main__":
+    client = ChatClient(discovery_port=5010)
+
+    # Discover the leader
+    threading.Thread(target=client.discover_leader, daemon=True).start()
+
+    # Start listening for messages from the server
+    threading.Thread(target=client.listen_for_messages, daemon=True).start()
+
+    # Send messages to the server
+    while True:
+        while(client.server_id != None):
+            message = input("\n Enter message: ")
+            client.send_message(message)
