@@ -125,6 +125,10 @@ class ChatServer:
         print(f"Server {self.id} initiating leader election.")
         # Start the election with this server's ID
         self.forward_token(self.id) 
-                  
+
+
+if __name__ == "__main__":
+    server = ChatServer()
+    server.start_server()                  
           
     
