@@ -68,7 +68,7 @@ class ChatClient:
                 data = json.loads(response.decode())
                 if data["type"] == "message":
                     print(f"Message from server: {data['text']}")
-                except Exception as e:
+            except Exception as e:
                     print(f"Error receiving message: {e}")
                     
 if __name__ == "__main__":
