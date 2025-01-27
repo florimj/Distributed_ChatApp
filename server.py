@@ -7,7 +7,7 @@ import time
 class ChatServer:
     def __init__(self):
         # Define Server Port and Discovery Port
-        self.port = 5000 # Adjust manual for every Server
+        self.port = 5000 # Adjust manually for every Server
         self.discovery_port = 5010
 
         # Create Unique ID and Leader State
@@ -100,8 +100,7 @@ class ChatServer:
                         "isLeader": data['isLeader']
                     }
                     print(f"Discovered new server: {server_ip}:{server_port}")
-                    
-              elif data["type"] == "leader":
+            elif data["type"] == "leader":
                 leader_id = server_id
                 server_port = data ['port']
                 print(f"Server {leader_id} has been elected as leader.")
@@ -109,7 +108,6 @@ class ChatServer:
                 #update status
                 self.is_leader = (leader_id == self.id)
                 self.voted = False
-
                 
                 # Update the respective server entry with `isLeader=True`
                 if leader_id in self.known_servers:
@@ -193,12 +191,12 @@ class ChatServer:
 
                     print(f"Client {data['id']} connected from {address}")
 
-                elif data["type"] == "message":
+                  elif data["type"] == "message":
                     # Forward message
                     print(f"Received message from client {data['id']}: {data['text']}")
                     self.broadcast_message(data, data['id'])
                   
-                elif data["type"] == "election":
+                  elif data["type"] == "election":
                     token_id = data["token"]
                     print(f"Received election token {token_id} from {address}.")
                     if (self.voted==False):
@@ -220,7 +218,7 @@ class ChatServer:
                         threading.Thread(target=self.broadcast_heartbeat).start()
                 self.voted = True
                 
-            except Exception as e:
+              except Exception as e:
                 print("Someone disconnected!")
                 print(e)
                 
