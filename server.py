@@ -31,7 +31,7 @@ class ChatServer:
         self.known_clients = {}  # Store connected clients
         self.known_servers = {}  # Store discovered servers
       
-      def start_server(self):
+    def start_server(self):
         print("------------------------------------------")
         print(f"Server IP: {self.ip} Server ID: {self.id}")
         print("------------------------------------------")
@@ -48,7 +48,7 @@ class ChatServer:
         print("Initiating leader election at startup...")
         self.initiate_leader_election()
           
-      def broadcast_discovery(self):
+    def broadcast_discovery(self):
         while True:
             discover_message = {
                 "type": "discover",
@@ -61,7 +61,7 @@ class ChatServer:
             print(f"Broadcasting discovery message from {self.id}")
             time.sleep(10)  # Send discovery messages every 10 seconds
 
-      def broadcast_heartbeat(self):
+    def broadcast_heartbeat(self):
         """Leader periodically sends heartbeat messages to all servers."""
         while self.is_leader:
             heartbeat_message = {
@@ -73,23 +73,23 @@ class ChatServer:
             print("Heartbeat sent by the leader.")
             time.sleep(10)  # Heartbeat interval
 
-      def monitor_heartbeat(self):
+    def monitor_heartbeat(self):
         """Monitor leader's heartbeat and trigger election on failure."""
-          while True:
+        while True:
             time.sleep(10)  # Check every 10 seconds
             if not self.is_leader and (time.time() - self.last_heartbeat > 20):  # 20-second timeout
                 print("Leader unresponsive. Initiating leader election.")
                 self.initiate_leader_election()
 
-      def listen_on_discovery_port(self):
-          """Listen for discovery messages on the discovery port."""
-          while True:
-             message, address = self.discovery_socket.recvfrom(1024)
-             data = json.loads(message.decode())
-             server_id = data['id']
-             server_ip = address[0]
+    def listen_on_discovery_port(self):
+        """Listen for discovery messages on the discovery port."""
+        while True:
+            message, address = self.discovery_socket.recvfrom(1024)
+            data = json.loads(message.decode())
+            server_id = data['id']
+            server_ip = address[0]
             
-             if data["type"] == "discover":
+            if data["type"] == "discover":
                 if server_id not in self.known_servers:
                     server_ip = server_ip
                     server_port = data ['port']
@@ -166,17 +166,17 @@ class ChatServer:
             self.discovery_socket.sendto(json.dumps(leader_message).encode(), ('<broadcast>', self.discovery_port))
         
 
-      def listen_on_server_port(self):
-          while True:
-              try:
-                  message, address = self.server_socket.recvfrom(1024)
-                  #print(message)
-                  data = json.loads(message.decode())
+    def listen_on_server_port(self):
+        while True:
+            try:
+                message, address = self.server_socket.recvfrom(1024)
+                #print(message)
+                data = json.loads(message.decode())
 
-                  # Display message received from the client
-                  #print(f"Received message from {address}: {data}")
+                # Display message received from the client
+                #print(f"Received message from {address}: {data}")
     
-                  if data["type"] == "join":
+                if data["type"] == "join":
                     # New client connected
                     client_id = data["id"]
                     client_ip = address[0]
@@ -191,12 +191,12 @@ class ChatServer:
 
                     print(f"Client {data['id']} connected from {address}")
 
-                  elif data["type"] == "message":
+                elif data["type"] == "message":
                     # Forward message
                     print(f"Received message from client {data['id']}: {data['text']}")
                     self.broadcast_message(data, data['id'])
                   
-                  elif data["type"] == "election":
+                elif data["type"] == "election":
                     token_id = data["token"]
                     print(f"Received election token {token_id} from {address}.")
                     if (self.voted==False):
@@ -218,7 +218,7 @@ class ChatServer:
                         threading.Thread(target=self.broadcast_heartbeat).start()
                 self.voted = True
                 
-              except Exception as e:
+            except Exception as e:
                 print("Someone disconnected!")
                 print(e)
                 
@@ -242,7 +242,7 @@ class ChatServer:
                 except Exception as e:
                     print(e)
                     
-      def initiate_leader_election(self):
+    def initiate_leader_election(self):
         print(f"Server {self.id} initiating leader election.")
         # Start the election with this server's ID
         self.forward_token(self.id) 
