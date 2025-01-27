@@ -57,6 +57,8 @@ class ChatClient:
             try:
                 msg = json.dumps({"type": "message", "id": self.id, "text": message})
                 self.discovery_socket.sendto(msg.encode(), self.server_address)
+            except Exception as e:
+                print(f"Failed to send message: {e}")
 
     def listen_for_messages(self):
         """Listen for messages from the leader server."""
@@ -66,6 +68,8 @@ class ChatClient:
                 data = json.loads(response.decode())
                 if data["type"] == "message":
                     print(f"Message from server: {data['text']}")
+                except Exception as e:
+                    print(f"Error receiving message: {e}")
                     
 if __name__ == "__main__":
     client = ChatClient(discovery_port=5010)
